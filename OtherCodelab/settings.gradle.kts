@@ -28,3 +28,4 @@ dependencyResolutionManagement {
 rootProject.name = "OtherCodelab"
 include(":app")
 include(":affirmations")
+include(":woof")
