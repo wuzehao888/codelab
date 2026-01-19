@@ -4,7 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,14 +21,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -103,38 +117,100 @@ fun WoofList(dogs: List<Dog>, modifier: Modifier = Modifier) {
 
 @Composable
 fun WoofItem(dog: Dog, modifier: Modifier = Modifier) {
+
+    var expand by remember { mutableStateOf(false) }
+
+    val bg by animateColorAsState(
+        targetValue = if (expand) MaterialTheme.colorScheme.tertiaryContainer
+        else MaterialTheme.colorScheme.primaryContainer
+    )
+
+
     Card(
         modifier = modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(topEnd = 16.dp, bottomStart = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(dog.imageResourceId),
-                contentDescription = stringResource(dog.name),
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(50.dp)),
-                contentScale = ContentScale.Crop
-            )
 
-            Column(
-                modifier = Modifier.padding(start = 10.dp)
-            ) {
-                Text(
-                    stringResource(dog.name),
-                    style = MaterialTheme.typography.displayMedium
+    ) {
+        Column(
+            modifier = Modifier
+                .background(bg)
+                .padding(dimensionResource(R.dimen.padding_medium))
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
                 )
-                Spacer(modifier = Modifier.height(5.dp))
-                Text(
-                    stringResource(R.string.years_old, dog.age),
-                    style = MaterialTheme.typography.bodyLarge
+        ) {
+            Row(
+
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(dog.imageResourceId),
+                    contentDescription = stringResource(dog.name),
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(RoundedCornerShape(50.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                Column(
+                    modifier = Modifier.padding(start = 10.dp)
+                ) {
+                    Text(
+                        stringResource(dog.name),
+                        style = MaterialTheme.typography.displayMedium
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(
+                        stringResource(R.string.years_old, dog.age),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                DogItemBtn(expand = expand, onclick = {
+                    expand = !expand
+                })
+            }
+
+            if (expand) {
+                DogHobby(
+                    stringResource(dog.hobbies),
+                    modifier = Modifier.padding(top = 20.dp)
                 )
             }
         }
-    }
 
+    }
+}
+
+@Composable
+fun DogItemBtn(
+    expand: Boolean,
+    onclick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    val icon = if (expand) Icons.Filled.ExpandLess
+    else Icons.Filled.ExpandMore
+
+    IconButton(onClick = onclick, modifier = modifier) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary
+        )
+    }
+}
+
+@Composable
+fun DogHobby(hobby: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text("About", style = MaterialTheme.typography.displayMedium)
+        Text(hobby, modifier = Modifier.padding(top = 10.dp))
+    }
 }
