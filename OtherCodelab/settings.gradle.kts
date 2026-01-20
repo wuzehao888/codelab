@@ -29,3 +29,4 @@ rootProject.name = "OtherCodelab"
 include(":app")
 include(":affirmations")
 include(":woof")
+include(":superhero")
